@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Biology Quiz</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:#f3faf5;color:#1f2937;min-height:100vh}
+  .wrap{max-width:560px;margin:0 auto;padding:2rem 1rem}
+  .card{background:#fff;border:1px solid #d9e8de;border-radius:14px;padding:1.5rem}
+  h1{font-size:26px;font-weight:600;margin:0 0 6px}
+  .center{text-align:center}
+  .muted{color:#6b7280;font-size:14px}
+  .logo{width:60px;height:60px;border-radius:50%;background:#dcfce7;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:30px}
+  input[type=text]{width:100%;padding:12px;border:1px solid #cbd5d0;border-radius:10px;font-size:15px;outline:none}
+  input[type=text]:focus{border-color:#16a34a}
+  button{font-family:inherit;cursor:pointer}
+  .btn{width:100%;padding:12px 20px;border:none;border-radius:10px;font-size:15px;font-weight:600;background:#16a34a;color:#fff;margin-top:1rem}
+  .btn:disabled{background:#e5e7eb;color:#9ca3af;cursor:not-allowed}
+  .btn.sec{background:#f1f5f2;color:#1f2937;border:1px solid #d9e8de;margin-top:0}
+  .letter{font-size:11px;font-weight:700;letter-spacing:.1em;color:#6b7280;margin:1.25rem 0 6px}
+  .topics{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px}
+  .topic{padding:12px 14px;background:#fff;border:1px solid #d9e8de;border-radius:10px;font-size:14px;text-align:left;display:flex;justify-content:space-between;align-items:center}
+  .topic:hover{border-color:#16a34a;background:#f0fdf4}
+  .topic small{color:#6b7280;font-size:11px}
+  .bar{height:6px;background:#e5efe8;border-radius:99px;margin:6px 0 1.25rem}
+  .bar div{height:100%;background:#16a34a;border-radius:99px;transition:width .3s}
+  .row{display:flex;justify-content:space-between;font-size:13px;color:#6b7280}
+  .tag{display:inline-block;font-size:11px;font-weight:600;background:#dcfce7;color:#15803d;padding:3px 9px;border-radius:99px;margin-bottom:1rem}
+  .q{font-size:17px;font-weight:600;line-height:1.5;margin:0 0 1.25rem}
+  .opts{display:grid;gap:8px}
+  .opts.tf{grid-template-columns:1fr 1fr}
+  .opt{padding:11px 14px;border:1px solid #d9e8de;background:#f8faf9;border-radius:10px;font-size:15px;text-align:left}
+  .opt.sel{background:#dcfce7;border:1.5px solid #16a34a;color:#15803d}
+  .score{font-size:52px;font-weight:700;margin:8px 0 4px}
+  .rev{background:#fff;border:1px solid #d9e8de;border-left:4px solid #16a34a;border-radius:10px;padding:12px 14px;margin-bottom:8px;font-size:13px}
+  .rev.bad{border-left-color:#dc2626}
+  .rev p{margin:0 0 3px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:1rem}
+  .back{background:none;border:none;color:#6b7280;font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script>
+/* Short-answer format: "a|b" = any one accepted; "a&b" = all required */
+const quizData = {
+  "Cell Biology": [
+    {t:"mcq",q:"What is the powerhouse of the cell?",o:["Nucleus","Mitochondria","Ribosome","Golgi apparatus"],a:"Mitochondria"},
+    {t:"tf",q:"The cell membrane is selectively permeable.",a:"True"},
+    {t:"short",q:"What organelle is responsible for protein synthesis?",a:"ribosome"},
+    {t:"mcq",q:"Which of these is found in plant cells but NOT animal cells?",o:["Mitochondria","Cell wall","Nucleus","Ribosome"],a:"Cell wall"},
+    {t:"tf",q:"Prokaryotic cells have a membrane-bound nucleus.",a:"False"},
+    {t:"mcq",q:"What process do cells use to engulf large particles?",o:["Osmosis","Diffusion","Phagocytosis","Exocytosis"],a:"Phagocytosis"},
+    {t:"tf",q:"The nucleus contains the cell's genetic material.",a:"True"},
+    {t:"short",q:"What is the fluid-filled space inside the nucleus called?",a:"nucleoplasm|karyoplasm"},
+    {t:"mcq",q:"Which organelle packages and ships proteins?",o:["Lysosome","Vacuole","Golgi apparatus","Centriole"],a:"Golgi apparatus"},
+    {t:"tf",q:"Lysosomes contain digestive enzymes.",a:"True"}
+  ],
+  "Classification & Diversity": [
+    {t:"mcq",q:"How many kingdoms are in the traditional six-kingdom system?",o:["4","5","6","7"],a:"6"},
+    {t:"tf",q:"Fungi are classified as plants.",a:"False"},
+    {t:"short",q:"What is the science of classifying organisms called?",a:"taxonomy|systematics"},
+    {t:"mcq",q:"Which is the most specific level of classification?",o:["Genus","Family","Species","Order"],a:"Species"},
+    {t:"tf",q:"Viruses are considered living organisms.",a:"False"},
+    {t:"mcq",q:"What kingdom do mushrooms belong to?",o:["Plantae","Protista","Fungi","Animalia"],a:"Fungi"},
+    {t:"tf",q:"Binomial nomenclature uses genus and species names.",a:"True"},
+    {t:"short",q:"Who developed the modern classification system?",a:"linnaeus|linneaus|carl linnaeus"},
+    {t:"mcq",q:"Which group of organisms is prokaryotic?",o:["Fungi","Protists","Bacteria","Plants"],a:"Bacteria"},
+    {t:"tf",q:"All mammals are warm-blooded.",a:"True"}
+  ],
+  "Ecology": [
+    {t:"mcq",q:"What do we call an organism that makes its own food?",o:["Heterotroph","Decomposer","Autotroph","Consumer"],a:"Autotroph"},
+    {t:"tf",q:"A food chain always starts with a producer.",a:"True"},
+    {t:"short",q:"What term describes all organisms in an area plus their environment?",a:"ecosystem"},
+    {t:"mcq",q:"Which relationship benefits one organism while the other is unaffected?",o:["Mutualism","Parasitism","Commensalism","Competition"],a:"Commensalism"},
+    {t:"tf",q:"Decomposers are producers in the food chain.",a:"False"},
+    {t:"mcq",q:"What is the term for the role an organism plays in its ecosystem?",o:["Habitat","Niche","Biome","Community"],a:"Niche"},
+    {t:"tf",q:"The water cycle is also called the hydrological cycle.",a:"True"},
+    {t:"short",q:"What do we call the gradual change in an ecosystem over time?",a:"succession|ecological succession"},
+    {t:"mcq",q:"Which biome receives the least rainfall?",o:["Rainforest","Savanna","Desert","Tundra"],a:"Desert"},
+    {t:"tf",q:"Predation always harms the prey population long-term.",a:"False"}
+  ],
+  "Evolution & Natural Selection": [
+    {t:"mcq",q:"Who proposed the theory of natural selection?",o:["Gregor Mendel","Charles Darwin","Louis Pasteur","James Watson"],a:"Charles Darwin"},
+    {t:"tf",q:"Natural selection acts on genotype, not phenotype.",a:"False"},
+    {t:"short",q:"What do we call the preserved remains of ancient organisms?",a:"fossil"},
+    {t:"mcq",q:"What term describes the variety of species in an area?",o:["Mutation","Biodiversity","Adaptation","Speciation"],a:"Biodiversity"},
+    {t:"tf",q:"Evolution always occurs slowly over many generations.",a:"False"},
+    {t:"mcq",q:"What is it called when two species evolve in response to each other?",o:["Convergent evolution","Coevolution","Divergent evolution","Adaptive radiation"],a:"Coevolution"},
+    {t:"tf",q:"Homologous structures suggest common ancestry.",a:"True"},
+    {t:"short",q:"What is the term for a trait that improves an organism's survival?",a:"adaptation|adaptive"},
+    {t:"mcq",q:"Which process produces new alleles in a population?",o:["Migration","Selection","Mutation","Genetic drift"],a:"Mutation"},
+    {t:"tf",q:"Analogous structures have the same evolutionary origin.",a:"False"}
+  ],
+  "Genetics": [
+    {t:"mcq",q:"Adenine pairs with which base in DNA?",o:["Guanine","Cytosine","Thymine","Uracil"],a:"Thymine"},
+    {t:"tf",q:"DNA stands for Deoxyribonucleic Acid.",a:"True"},
+    {t:"short",q:"What do we call the different forms of a gene?",a:"allele"},
+    {t:"mcq",q:"Which cell division produces gametes?",o:["Mitosis","Meiosis","Binary fission","Budding"],a:"Meiosis"},
+    {t:"tf",q:"A dominant allele is always expressed over a recessive allele.",a:"True"},
+    {t:"mcq",q:"What is the term for an organism with two identical alleles?",o:["Heterozygous","Homozygous","Diploid","Haploid"],a:"Homozygous"},
+    {t:"tf",q:"RNA uses thymine instead of uracil.",a:"False"},
+    {t:"short",q:"What is the observable trait of an organism called?",a:"phenotype"},
+    {t:"mcq",q:"How many chromosomes does a normal human cell have?",o:["23","44","46","48"],a:"46"},
+    {t:"tf",q:"Sex-linked traits are carried on the X or Y chromosome.",a:"True"}
+  ],
+  "Human Body Systems": [
+    {t:"mcq",q:"Which organ produces insulin?",o:["Liver","Kidney","Pancreas","Stomach"],a:"Pancreas"},
+    {t:"tf",q:"The human heart has four chambers.",a:"True"},
+    {t:"short",q:"What is the main function of red blood cells?",a:"oxygen"},
+    {t:"mcq",q:"Which system is responsible for gas exchange?",o:["Digestive","Nervous","Respiratory","Endocrine"],a:"Respiratory"},
+    {t:"tf",q:"Veins carry oxygenated blood away from the heart.",a:"False"},
+    {t:"mcq",q:"What is the largest organ in the human body?",o:["Liver","Skin","Brain","Lungs"],a:"Skin"},
+    {t:"tf",q:"The small intestine is longer than the large intestine.",a:"True"},
+    {t:"short",q:"What fluid does the lymphatic system transport?",a:"lymph"},
+    {t:"mcq",q:"Which part of the brain controls balance and coordination?",o:["Cerebrum","Cerebellum","Medulla","Thalamus"],a:"Cerebellum"},
+    {t:"tf",q:"Tendons connect muscle to bone.",a:"True"}
+  ],
+  "Microbiology": [
+    {t:"mcq",q:"Which type of microorganism causes malaria?",o:["Bacteria","Virus","Protozoan","Fungus"],a:"Protozoan"},
+    {t:"tf",q:"Antibiotics are effective against viral infections.",a:"False"},
+    {t:"short",q:"What is the term for the community of beneficial bacteria living in the gut?",a:"microbiome|microbiota|gut flora|normal flora"},
+    {t:"mcq",q:"Which scientist developed the first vaccine?",o:["Louis Pasteur","Edward Jenner","Alexander Fleming","Robert Koch"],a:"Edward Jenner"},
+    {t:"tf",q:"Bacteria reproduce by binary fission.",a:"True"},
+    {t:"mcq",q:"What structure protects some bacteria from the immune system?",o:["Flagellum","Capsule","Pili","Plasmid"],a:"Capsule"},
+    {t:"tf",q:"Viruses can reproduce independently without a host cell.",a:"False"},
+    {t:"short",q:"What is the process by which bacteria transfer genes through direct contact?",a:"conjugation"},
+    {t:"mcq",q:"Which antibiotic was the first to be discovered?",o:["Streptomycin","Tetracycline","Penicillin","Ampicillin"],a:"Penicillin"},
+    {t:"tf",q:"Fungi can cause disease in humans.",a:"True"}
+  ],
+  "Plants & Photosynthesis": [
+    {t:"mcq",q:"What is the green pigment in plants called?",o:["Melanin","Chlorophyll","Carotene","Hemoglobin"],a:"Chlorophyll"},
+    {t:"tf",q:"Plants release oxygen as a byproduct of photosynthesis.",a:"True"},
+    {t:"short",q:"Name the two raw materials needed for photosynthesis.",a:"water&carbon dioxide|water&co2"},
+    {t:"mcq",q:"Where does photosynthesis mainly occur in a plant?",o:["Root","Stem","Leaf","Flower"],a:"Leaf"},
+    {t:"tf",q:"Transpiration is the loss of water vapour through the leaves.",a:"True"},
+    {t:"mcq",q:"What are the small pores on a leaf surface called?",o:["Xylem","Stomata","Phloem","Cuticle"],a:"Stomata"},
+    {t:"tf",q:"Xylem transports food from leaves to the rest of the plant.",a:"False"},
+    {t:"short",q:"What is the transfer of pollen from anther to stigma called?",a:"pollination"},
+    {t:"mcq",q:"Which part of the plant absorbs water and minerals from the soil?",o:["Stem","Leaves","Roots","Flowers"],a:"Roots"},
+    {t:"tf",q:"Mosses are non-vascular plants.",a:"True"}
+  ],
+  "Reproduction & Development": [
+    {t:"mcq",q:"What is the male gamete in animals called?",o:["Ovum","Zygote","Sperm","Embryo"],a:"Sperm"},
+    {t:"tf",q:"Asexual reproduction requires two parents.",a:"False"},
+    {t:"short",q:"What is the fertilised egg cell called?",a:"zygote"},
+    {t:"mcq",q:"Which organ produces eggs in human females?",o:["Uterus","Fallopian tube","Ovary","Cervix"],a:"Ovary"},
+    {t:"tf",q:"Metamorphosis occurs in insects and amphibians.",a:"True"},
+    {t:"mcq",q:"Which type of reproduction produces genetically identical offspring?",o:["Sexual","Fertilisation","Asexual","Meiosis"],a:"Asexual"},
+    {t:"tf",q:"In humans, fertilisation normally occurs in the uterus.",a:"False"},
+    {t:"short",q:"What is the stage between larva and adult in an insect called?",a:"pupa|chrysalis"},
+    {t:"mcq",q:"What is the term for animals that develop in eggs outside the mother's body?",o:["Viviparity","Oviparity","Parthenogenesis","Budding"],a:"Oviparity"},
+    {t:"tf",q:"Placental mammals nourish their young through a placenta.",a:"True"}
+  ],
+  "Respiration & Metabolism": [
+    {t:"mcq",q:"What is the main energy-carrying product of aerobic respiration?",o:["Lactic acid","Ethanol","ATP","Glucose"],a:"ATP"},
+    {t:"tf",q:"Anaerobic respiration requires oxygen.",a:"False"},
+    {t:"short",q:"What molecule is the primary energy currency of the cell?",a:"atp|adenosine triphosphate"},
+    {t:"mcq",q:"Where does the Krebs cycle occur?",o:["Cytoplasm","Nucleus","Mitochondrial matrix","Cell membrane"],a:"Mitochondrial matrix"},
+    {t:"tf",q:"Yeast produces ethanol and CO2 during anaerobic respiration.",a:"True"},
+    {t:"mcq",q:"Which molecule is broken down in cellular respiration to release energy?",o:["Oxygen","Carbon dioxide","Glucose","Water"],a:"Glucose"},
+    {t:"tf",q:"The rate of metabolism is the same in all organisms.",a:"False"},
+    {t:"short",q:"What waste gas is produced during aerobic respiration?",a:"carbon dioxide|co2"},
+    {t:"mcq",q:"Which process converts glucose to pyruvate?",o:["Krebs cycle","Glycolysis","Oxidative phosphorylation","Beta oxidation"],a:"Glycolysis"},
+    {t:"tf",q:"Enzymes are biological catalysts.",a:"True"}
+  ]
+};
+
+const topics = Object.keys(quizData).sort();
+const app = document.getElementById("app");
+let S = {name:"", topic:"", i:0, answers:[], sel:null};
+
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const norm = s => String(s).toLowerCase().replace(/[^a-z0-9& ]/g," ").replace(/\s+/g," ").trim();
+
+function correct(q, ans){
+  if(ans == null || ans === "") return false;
+  if(q.t !== "short") return ans === q.a;
+  const a = norm(ans);
+  return q.a.split("|").some(opt => opt.split("&").every(part => a.includes(norm(part))));
+}
+function displayAnswer(q){
+  return q.t === "short" ? q.a.split("|")[0].replace("&"," and ") : q.a;
+}
+
+function nameScreen(){
+  app.innerHTML = `
+    <div class="center" style="margin:1.5rem 0 2rem">
+      <div class="logo">🧬</div>
+      <h1>Biology Quiz</h1>
+      <p class="muted" style="margin:0">Test your biology knowledge</p>
+    </div>
+    <div class="card">
+      <label class="muted" for="nm">What is your name?</label>
+      <input type="text" id="nm" placeholder="Enter your name..." value="${esc(S.name)}" style="margin-top:8px" autocomplete="off">
+      <button class="btn" id="go" ${S.name.trim()?"":"disabled"}>Continue →</button>
+    </div>`;
+  const nm = document.getElementById("nm"), go = document.getElementById("go");
+  const next = () => { if(S.name.trim()) topicScreen(); };
+  nm.addEventListener("input", e => { S.name = e.target.value; go.disabled = !S.name.trim(); });
+  nm.addEventListener("keydown", e => { if(e.key === "Enter") next(); });
+  go.addEventListener("click", next);
+  nm.focus();
+}
+
+function topicScreen(){
+  const groups = {};
+  topics.forEach(t => (groups[t[0].toUpperCase()] = groups[t[0].toUpperCase()] || []).push(t));
+  let html = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:.5rem">
+      <div class="logo" style="margin:0;width:38px;height:38px;font-size:18px">👋</div>
+      <div><div style="font-weight:600">Hello, ${esc(S.name.trim())}!</div><div class="muted" style="font-size:13px">Choose a topic to begin</div></div>
+      <button class="back" id="bk" style="margin-left:auto">← Back</button>
+    </div>`;
+  Object.keys(groups).sort().forEach(L => {
+    html += `<div class="letter">${L}</div><div class="topics">` +
+      groups[L].map(t => `<button class="topic" data-t="${esc(t)}"><span>${esc(t)}</span><small>${quizData[t].length} Qs</small></button>`).join("") +
+      `</div>`;
+  });
+  app.innerHTML = html;
+  document.getElementById("bk").onclick = nameScreen;
+  app.querySelectorAll(".topic").forEach(b => b.onclick = () => startQuiz(b.dataset.t));
+}
+
+function startQuiz(t){
+  S.topic = t; S.i = 0; S.answers = []; S.sel = null;
+  quizScreen();
+}
+
+function quizScreen(){
+  const qs = quizData[S.topic], q = qs[S.i];
+  const label = q.t === "mcq" ? "Multiple choice" : q.t === "tf" ? "True / False" : "Short answer";
+  let body = "";
+  if(q.t === "mcq") body = `<div class="opts">` + q.o.map(o => `<button class="opt" data-v="${esc(o)}">${esc(o)}</button>`).join("") + `</div>`;
+  else if(q.t === "tf") body = `<div class="opts tf">` + ["True","False"].map(o => `<button class="opt" data-v="${o}" style="text-align:center;font-weight:600">${o}</button>`).join("") + `</div>`;
+  else body = `<input type="text" id="sa" placeholder="Type your answer..." autocomplete="off">`;
+
+  app.innerHTML = `
+    <div class="row"><span>${esc(S.topic)}</span><span>${S.i+1} / ${qs.length}</span></div>
+    <div class="bar"><div style="width:${(S.i/qs.length)*100}%"></div></div>
+    <div class="card">
+      <span class="tag">${label}</span>
+      <p class="q">${esc(q.q)}</p>
+      ${body}
+    </div>
+    <button class="btn" id="nx" disabled>${S.i+1 === qs.length ? "Submit quiz" : "Next →"}</button>`;
+
+  const nx = document.getElementById("nx");
+  S.sel = null;
+  if(q.t === "short"){
+    const sa = document.getElementById("sa");
+    sa.addEventListener("input", () => { S.sel = sa.value.trim(); nx.disabled = !S.sel; });
+    sa.addEventListener("keydown", e => { if(e.key === "Enter" && S.sel) submit(); });
+    sa.focus();
+  } else {
+    app.querySelectorAll(".opt").forEach(b => b.onclick = () => {
+      app.querySelectorAll(".opt").forEach(x => x.classList.remove("sel"));
+      b.classList.add("sel"); S.sel = b.dataset.v; nx.disabled = false;
+    });
+  }
+  nx.onclick = submit;
+}
+
+function submit(){
+  if(!S.sel) return;
+  S.answers[S.i] = S.sel;
+  if(S.i + 1 < quizData[S.topic].length){ S.i++; quizScreen(); }
+  else resultsScreen();
+}
+
+function resultsScreen(){
+  const qs = quizData[S.topic];
+  const score = qs.reduce((n,q,i) => n + (correct(q, S.answers[i]) ? 1 : 0), 0);
+  const pct = Math.round(score / qs.length * 100);
+  const grade = pct>=80 ? ["Excellent!","#16a34a"] : pct>=60 ? ["Good job!","#0369a1"] : pct>=40 ? ["Keep practising!","#b45309"] : ["Keep studying!","#b91c1c"];
+  let html = `
+    <div class="card center" style="margin-bottom:1rem">
+      <div class="muted" style="font-size:13px">${esc(S.name.trim())} · ${esc(S.topic)}</div>
+      <div class="score" style="color:${grade[1]}">${pct}%</div>
+      <div style="font-size:18px;font-weight:600;color:${grade[1]}">${grade[0]}</div>
+      <div class="muted" style="margin-top:6px">${score} of ${qs.length} correct</div>
+    </div>`;
+  qs.forEach((q,i) => {
+    const ans = S.answers[i], ok = correct(q, ans);
+    html += `<div class="rev ${ok?"":"bad"}">
+      <p style="font-weight:600">${ok?"✓":"✗"} ${esc(q.q)}</p>
+      ${ok ? "" : `<p style="color:#dc2626">Your answer: ${esc(ans)}</p><p style="color:#15803d">Correct: ${esc(displayAnswer(q))}</p>`}
+    </div>`;
+  });
+  html += `<div class="grid3">
+    <button class="btn" id="again" style="margin:0">Try again</button>
+    <button class="btn sec" id="nt">New topic</button>
+    <button class="btn sec" id="ns">New student</button>
+  </div>`;
+  app.innerHTML = html;
+  document.getElementById("again").onclick = () => startQuiz(S.topic);
+  document.getElementById("nt").onclick = topicScreen;
+  document.getElementById("ns").onclick = () => { S = {name:"",topic:"",i:0,answers:[],sel:null}; nameScreen(); };
+  window.scrollTo(0,0);
+}
+
+nameScreen();
+</script>
+</body>
+</html>
